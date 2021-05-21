@@ -1,0 +1,6 @@
+name: radanda
+dependencies:
+- python=3.8
+- pandas
+- jupyter
+- pytest
