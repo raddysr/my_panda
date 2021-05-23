@@ -50,13 +50,13 @@ class DataFrame:
                 new_data[key] = value
         return new_data 
 
+    @property
+    def columns(self):
+        return(list(self._data))
+
     def __len__(self):
-        for value in self._data.values():
-            return len(value)
-
-        
-
-
+        return len(next(iter(self._data.values())))
+    
     def StringMethods(self):
         pass
 
