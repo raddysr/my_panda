@@ -12,9 +12,9 @@ jobs:
     steps:
       - checkout
       - run: echo "A second test"
-  workflows:
-    version: 2
-    test_builds:
-      jobs:
-        - build1
-        - build2
+workflows:
+  version: 2
+  test_builds:
+    jobs:
+      - build1
+      - build2
