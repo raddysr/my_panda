@@ -5,13 +5,13 @@ jobs:
       - image: circleci/python:3.8
     steps:
       - checkout
-      - run: echo "A first test"
+      - run: jupyter-notebook
   build2:
     docker:
       - image: circleci/python:3.8
     steps:
       - checkout
-      - run: echo "A second test"
+      - run: CI=true
 workflows:
   version: 2
   test_builds:
