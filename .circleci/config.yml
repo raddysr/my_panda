@@ -12,9 +12,16 @@ jobs:
     steps:
       - checkout
       - run: CI=true
+   build3:
+    docker:
+      - image: circleci/python:3.8
+    steps:
+      - checkout
+      - run: run_test.sh test_len
 workflows:
   version: 2
   test_builds:
     jobs:
       - build1
       - build2
+      - build3
