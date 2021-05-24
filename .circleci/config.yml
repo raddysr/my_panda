@@ -5,7 +5,7 @@ jobs:
       - image: circleci/python:3.8
     steps:
       - checkout
-      - run: jupyter-notebook
+      - run: python3 -c"print("OK!")"
   build2:
     docker:
       - image: circleci/python:3.8
