@@ -184,6 +184,28 @@ class DataFrame:
         new_data = {'Column Name': col_names, 'Data Type': dtypes}
         return DataFrame(new_data)
 
+    def __getitem__(self, item):
+        if isinstance(item, str):
+            return DataFrame({item: self._data[item]})
+        
+        if isinstance(item, list):
+            return DataFrame({col: self._data[col] for col in item})
+        
+        if isinstance(item, DataFrame):
+            if item.shape[1] != 1:
+                raise ValueError('item must be a two column dataframe')
+            arr = next(iter(item._data.values()))
+            if arr.dtype.kind != 'b':
+                raise ValueError('item must a one-column boolean DataFrame')
+            new_data = ({col: value[arr] for col, value in self._data.items()})
+            return DataFrame(new_data)
+
+    def _ipython_key_completions(self):
+        pass
+
+    def __setitem__(self, key, value):
+        pass
+
 def read_csv(fn):
     """ 
     Read in a comma-separated value file as a DataFrame
