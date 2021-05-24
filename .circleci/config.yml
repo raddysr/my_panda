@@ -17,7 +17,7 @@ jobs:
       - image: circleci/python:3.8
     steps:
       - checkout
-      - run: run_test.sh test_len
+      - run: ./run_test.sh test_len
 workflows:
   version: 2
   test_builds:
