@@ -185,6 +185,7 @@ class DataFrame:
         return DataFrame(new_data)
 
     def __getitem__(self, item):
+
         if isinstance(item, str):
             return DataFrame({item: self._data[item]})
         
@@ -198,11 +199,61 @@ class DataFrame:
             if arr.dtype.kind != 'b':
                 raise ValueError('item must a one-column boolean DataFrame')
             new_data = ({col: value[arr] for col, value in self._data.items()})
-            return DataFrame(new_data)
+            return DataFrame(new_data) 
+        
+        if isinstance(item, tuple):
+                return self._getitem_tuple(item)
+        
+        raise TypeError("The input must be string, list, DataFrame or tuple!!!")
 
-    def _ipython_key_completions(self):
+    def _getitem_tuple(self, item):
+        if len(item) != 2:
+            raise ValueError('item tuple must have length 2')
+        
+        row_selection, col_selection = item
+
+        if isinstance(row_selection, int):
+            row_selection = [row_selection]
+        elif isinstance(row_selection, DataFrame):
+            if row_selection.shape[1] != 1:
+                raise ValueError('Row selection DataFrame must be one column')
+            row_selection = next(iter(row_selection._data.values()))  
+            if row_selection.dtype.kind != 'b':
+                raise TypeError('row selection DataFrame must be a boolean')
+        elif not isinstance(row_selection, (list, slice)):
+            raise TypeError("row selectiom must bee int, list, slice or DataFrame")
+ 
+
+
+        if isinstance(col_selection, int):
+            col_selection = [self.columns[col_selection]]
+        elif isinstance(col_selection, str):
+            col_selection = [col_selection]
+        elif isinstance(col_selection, list):
+            new_col_selection = []
+            for col in col_selection:
+                if isinstance(col, int):
+                    new_col_selection.append(self.columns[col])
+                else:
+                    new_col_selection.append(col)
+            col_selection = new_col_selection
+
+        new_data = {}
+
+        for col in col_selection:
+            new_data[col] = self._data[col][row_selection]
+        
+        return DataFrame(new_data)
+
+
+
+
+
+
+
+    def _ipython_key_completions(self, item):
         pass
-
+        
     def __setitem__(self, key, value):
         pass
 
