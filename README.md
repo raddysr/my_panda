@@ -1,1 +1,1 @@
-Attempt for Data Manipulation library(like pandas :)
+Attempt for data manipulation library(like pandas :)
