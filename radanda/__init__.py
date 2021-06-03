@@ -258,6 +258,7 @@ class DataFrame:
         return self.columns
 
     def __setitem__(self, key, value):
+        
         if not isinstance(key, str):
             raise NotImplementedError('Setting only a single column')
         if isinstance(value, np.ndarray):
@@ -282,7 +283,92 @@ class DataFrame:
         self._data[key] = value
             
     def head(self, n=5):
-        pass
+    
+        return self[:n,:]
+
+    def tail(self, n=5):
+    
+        tail = len(self) - n # or -n
+        return self[tail: , :]
+
+    def min(self):
+    
+        return self._agg(np.min)
+
+    def max(self):
+    
+        return self._agg(np.max)
+
+    def mean(self):
+   
+        return self._agg(np.mean)
+
+    def median(self):
+   
+        return self._agg(np.median)
+
+    def sum(self):
+   
+        return self._agg(np.sum)
+
+    def var(self):
+   
+        return self._agg(np.var)
+
+    def std(self):
+    
+        return self._agg(np.std)
+
+    def all(self):
+    
+        return self._agg(np.all)
+
+    def any(self):
+    
+        return self._agg(np.any)
+
+    def argmax(self):
+    
+        return self._agg(np.argmax)
+
+    def argmin(self):
+    
+        return self._agg(np.argmin)
+
+    def _agg(self, aggfunc):
+
+        new_data = {}
+
+        for col, value in self._data.items():
+            try:
+                new_data[col] = np.array([aggfunc(value)])
+            except TypeError:
+                pass
+        return DataFrame(new_data)
+    
+    def is_nan(self):
+    
+        new_data = {}
+
+        for col, value in self._data.items():
+            if value.dtype.kind == 'O':
+                new_data[col] = value == None
+            else:
+                new_data[col] = np.isnan(value)
+        return DataFrame(new_data)
+
+    def count(self):
+        
+        df = self.is_nan()
+        
+        new_data = {}
+        length = len(df)
+        for col, value in df._data.items():
+            new_data[col] = np.array([length - value.sum()])
+
+        return DataFrame(new_data)
+                 
+
 
 def read_csv(fn):
     """ 
