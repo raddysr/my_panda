@@ -1,20 +1,16 @@
+from typing import NewType
 import numpy as np
+from numpy.lib import unique
 
 __version__ = '0.0.1'
 
 
 class DataFrame:
-
     def __init__(self, data):
-
         self._check_input_types(data)
-
         self._check_array_legths(data)
-
         self._data = self._convert_unicode_to_object(data)
-
      #   self.str = StringMethods(self)
-
         self.add_docs()
 
     def _check_input_types(self, data):
@@ -107,21 +103,17 @@ class DataFrame:
             </tbody>
         </table>
         """
-
         html = '<table><thead><tr><th></th>'
         for col in self.columns:
             html += f"<th>{col:10}</th>"
-
         html += '</tr></thead>'
         html += "<tbody>"
-
         only_head = False
         num_head = 10
         num_tail = 10
         if len(self) <= 20:
             only_head = True
             num_head = len(self)
-
         for i in range(num_head):
             html += f'<tr><td><strong>{i}</strong></td>'
             for col, values in self._data.items():
@@ -138,7 +130,6 @@ class DataFrame:
                 else:
                     html += f'<td>{values[i]:10}</td>'
             html += '</tr>'
-
         if not only_head:
             html += '<tr><strong><td>...</td></strong>'
             for i in range(len(self.columns)):
@@ -179,13 +170,10 @@ class DataFrame:
         return DataFrame(new_data)
 
     def __getitem__(self, item):
-
         if isinstance(item, str):
             return DataFrame({item: self._data[item]})
-
         if isinstance(item, list):
             return DataFrame({col: self._data[col] for col in item})
-
         if isinstance(item, DataFrame):
             if item.shape[1] != 1:
                 raise ValueError('item must be a two column dataframe')
@@ -194,19 +182,15 @@ class DataFrame:
                 raise ValueError('item must a one-column boolean DataFrame')
             new_data = ({col: value[arr] for col, value in self._data.items()})
             return DataFrame(new_data)
-
         if isinstance(item, tuple):
             return self._getitem_tuple(item)
-
         raise TypeError(
             "The input must be string, list, DataFrame or tuple!!!")
 
     def _getitem_tuple(self, item):
         if len(item) != 2:
             raise ValueError('item tuple must have length 2')
-
         row_selection, col_selection = item
-
         if isinstance(row_selection, int):
             row_selection = [row_selection]
         elif isinstance(row_selection, DataFrame):
@@ -218,7 +202,6 @@ class DataFrame:
         elif not isinstance(row_selection, (list, slice)):
             raise TypeError(
                 "row selectiom must bee int, list, slice or DataFrame")
-
         if isinstance(col_selection, int):
             col_selection = [self.columns[col_selection]]
         elif isinstance(col_selection, str):
@@ -235,22 +218,16 @@ class DataFrame:
             start = col_selection.start
             stop = col_selection.stop
             step = col_selection.step
-
             if isinstance(start, str):
                 start = self.columns.index(start)
-
             if isinstance(stop, str):
                 stop = self.columns.index(stop) + 1
-
             col_selection = self.columns[start:stop:step]
         else:
             raise TypeError('column must list, str, int or slice')
-
         new_data = {}
-
         for col in col_selection:
             new_data[col] = self._data[col][row_selection]
-
         return DataFrame(new_data)
 
     def _ipython_key_completions_(self):
@@ -258,7 +235,6 @@ class DataFrame:
         return self.columns
 
     def __setitem__(self, key, value):
-        
         if not isinstance(key, str):
             raise NotImplementedError('Setting only a single column')
         if isinstance(value, np.ndarray):
@@ -275,70 +251,53 @@ class DataFrame:
         elif isinstance(value, (int, bool, str, float)):
             value = np.repeat(value, len(self))
         else:
-            raise TypeError("Setting object must array, DataFrame or ....")
-        
+            raise TypeError("Setting object must array, DataFrame or ....")      
         if value.dtype.kind == 'U':
-            value = value.astype('object')
-        
+            value = value.astype('object')  
         self._data[key] = value
             
     def head(self, n=5):
-    
         return self[:n,:]
 
     def tail(self, n=5):
-    
         tail = len(self) - n # or -n
         return self[tail: , :]
 
     def min(self):
-    
         return self._agg(np.min)
 
     def max(self):
-    
         return self._agg(np.max)
 
     def mean(self):
-   
         return self._agg(np.mean)
 
     def median(self):
-   
         return self._agg(np.median)
 
     def sum(self):
-   
         return self._agg(np.sum)
 
     def var(self):
-   
         return self._agg(np.var)
 
     def std(self):
-    
         return self._agg(np.std)
 
     def all(self):
-    
         return self._agg(np.all)
 
     def any(self):
-    
         return self._agg(np.any)
 
     def argmax(self):
-    
         return self._agg(np.argmax)
 
     def argmin(self):
-    
         return self._agg(np.argmin)
 
     def _agg(self, aggfunc):
-
         new_data = {}
-
         for col, value in self._data.items():
             try:
                 new_data[col] = np.array([aggfunc(value)])
@@ -346,10 +305,8 @@ class DataFrame:
                 pass
         return DataFrame(new_data)
     
-    def is_nan(self):
-    
+    def is_nan(self):    
         new_data = {}
-
         for col, value in self._data.items():
             if value.dtype.kind == 'O':
                 new_data[col] = value == None
@@ -357,19 +314,209 @@ class DataFrame:
                 new_data[col] = np.isnan(value)
         return DataFrame(new_data)
 
-    def count(self):
-        
-        df = self.is_nan()
-        
+    def count(self):     
+        df = self.is_nan()      
         new_data = {}
         length = len(df)
         for col, value in df._data.items():
             new_data[col] = np.array([length - value.sum()])
-
         return DataFrame(new_data)
-                 
+    
+    def unique(self):               
+        dfs = []
+        for col,value in self._data.items():
+            new_data = {col: np.unique(value)}
+            dfs.append(DataFrame(new_data))
+        if len(dfs) == 1:
+            return dfs[0]
+        return dfs
 
+    def nunique(self):
+        new_data = {}
+        for col,value in self._data.items():
+            new_data[col] = np.array([len(np.unique(value))])
+        return DataFrame(new_data)
 
+    def value_counts(self, normalize=False):
+        dfs = []
+        for col, value in self._data.items():
+            uniques, counts = np.unique(value, return_counts=True)
+            order = np.argsort(-counts)
+            uniques = uniques[order]
+            counts = counts[order]
+            if normalize:
+                counts = counts/len(self)
+            df =DataFrame({col: uniques, 'count': counts})
+            dfs.append(df)
+        if len(dfs) == 1:
+            return dfs[0]
+        return dfs
+
+    def rename(self, columns):
+        if not isinstance(columns, dict):
+            raise ValueError("Columns must be a dict type")
+        new_data = {}
+        for col, value in self._data.items():
+            new_col = columns.get(col, col)
+            new_data[new_col] = value
+        return DataFrame(new_data)
+
+    def drop(self, columns):
+        if isinstance(columns,str):
+            columns = [columns]
+        elif not isinstance(columns, list):
+            raise TypeError("Columns must be a string")
+        new_data = {}
+        for col, value in self._data.items():
+            if not col in columns:
+                new_data[col] = value
+        return DataFrame(new_data)
+        
+    def abs(self):
+        """
+        Takes the absolute value of each value in the DataFrame
+
+        Returns
+        -------
+        A DataFrame
+        """
+        return self._non_agg(np.abs)
+
+    def cummin(self):
+        """
+        Finds cumulative minimum by column
+
+        Returns
+        -------
+        A DataFrame
+        """
+        return self._non_agg(np.minimum.accumulate)
+
+    def cummax(self):
+        """
+        Finds cumulative maximum by column
+
+        Returns
+        -------
+        A DataFrame
+        """
+        return self._non_agg(np.maximum.accumulate)
+
+    def cumsum(self):
+        """
+        Finds cumulative sum by column
+
+        Returns
+        -------
+        A DataFrame
+        """
+        return self._non_agg(np.cumsum)
+
+    def clip(self, lower=None, upper=None):
+        """
+        All values less than lower will be set to lower
+        All values greater than upper will be set to upper
+
+        Parameters
+        ----------
+        lower: number or None
+        upper: number or None
+
+        Returns
+        -------
+        A DataFrame
+        """
+        return self._non_agg(np.clip, a_min=lower, a_max=upper)
+
+    def round(self, n):
+        """
+        Rounds values to the nearest n decimals
+
+        Returns
+        -------
+        A DataFrame
+        """
+        return self._non_agg(np.round, 'if', decimals=n)
+
+    def copy(self):
+        """
+        Copies the DataFrame
+
+        Returns
+        -------
+        A DataFrame
+        """
+        return self._non_agg(np.copy)
+
+    def _non_agg(self, funcname, kinds='bif', **kwargs):
+        """
+        Generic non-aggregation function
+
+        Parameters
+        ----------
+        funcname: numpy function
+        args: extra arguments for certain functions
+
+        Returns
+        -------
+        A DataFrame
+        """
+        new_data = {}
+        for col, values in self._data.items():
+            if values.dtype.kind in kinds:
+                values = funcname(values, **kwargs)
+            else:
+                values = values.copy()
+            new_data[col] = values
+        return DataFrame(new_data)
+
+    def diff(self, n=1):
+        """
+        Take the difference between the current value and
+        the nth value above it.
+
+        Parameters
+        ----------
+        n: int
+
+        Returns
+        -------
+        A DataFrame
+        """
+        def func(values):
+            values = values.astype('float')
+            values_shifted = np.roll(values, n)
+            values = values - values_shifted
+            if n >= 0:
+                values[:n] = np.NAN
+            else:
+                values[n:] = np.NAN
+            return values
+        return self._non_agg(func)
+
+    def pct_change(self, n=1):
+        """
+        Take the percentage difference between the current value and
+        the nth value above it.
+
+        Parameters
+        ----------
+        n: int
+
+        Returns
+        -------
+        A DataFrame
+        """
+        def func(values):
+            values = values.astype('float')
+            values_shifted = np.roll(values, n)
+            values = values - values_shifted
+            if n >= 0:
+                values[:n] = np.NAN
+            else:
+                values[n:] = np.NAN
+            return values / values_shifted
+        return self._non_agg(func)
 def read_csv(fn):
     """ 
     Read in a comma-separated value file as a DataFrame
