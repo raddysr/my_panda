@@ -460,6 +460,8 @@ class DataFrame:
         Returns
         -------
         A DataFrame
+
+
         """
         new_data = {}
         for col, values in self._data.items():
@@ -493,6 +495,84 @@ class DataFrame:
                 values[n:] = np.NAN
             return values
         return self._non_agg(func)
+        #### Arithmetic and Comparison Operators ####
+
+    def __add__(self, other):
+        return self._oper('__add__', other)
+
+    def __radd__(self, other):
+        return self._oper('__radd__', other)
+
+    def __sub__(self, other):
+        return self._oper('__sub__', other)
+
+    def __rsub__(self, other):
+        return self._oper('__rsub__', other)
+
+    def __mul__(self, other):
+        return self._oper('__mul__', other)
+
+    def __rmul__(self, other):
+        return self._oper('__rmul__', other)
+
+    def __truediv__(self, other):
+        return self._oper('__truediv__', other)
+
+    def __rtruediv__(self, other):
+        return self._oper('__rtruediv__', other)
+
+    def __floordiv__(self, other):
+        return self._oper('__floordiv__', other)
+
+    def __rfloordiv__(self, other):
+        return self._oper('__rfloordiv__', other)
+
+    def __pow__(self, other):
+        return self._oper('__pow__', other)
+
+    def __rpow__(self, other):
+        return self._oper('__rpow__', other)
+
+    def __gt__(self, other):
+        return self._oper('__gt__', other)
+
+    def __lt__(self, other):
+        return self._oper('__lt__', other)
+
+    def __ge__(self, other):
+        return self._oper('__ge__', other)
+
+    def __le__(self, other):
+        return self._oper('__le__', other)
+
+    def __ne__(self, other):
+        return self._oper('__ne__', other)
+
+    def __eq__(self, other):
+        return self._oper('__eq__', other)
+
+    def _oper(self, op, other):
+        """
+        Generic operator method
+
+        Parameters
+        ----------
+        op: str name of special method
+        other: the other object being operated on
+
+        Returns
+        -------
+        A DataFrame
+        """
+        if isinstance(other, DataFrame):
+            if other.shape[1] != 1:
+                raise ValueError('`other` must be a one-column DataFrame')
+            other = next(iter(other._data.values()))
+        new_data = {}
+        for col, values in self._data.items():
+            func = getattr(values, op)
+            new_data[col] = func(other)
+        return DataFrame(new_data)
 
     def pct_change(self, n=1):
         """
@@ -517,6 +597,38 @@ class DataFrame:
                 values[n:] = np.NAN
             return values / values_shifted
         return self._non_agg(func)
+    
+    def sort_values(self, by, asc=True):
+        if isinstance(by, str):
+            order = np.argsort(self._data[by])
+        elif isinstance(by, list):
+            by = [self._data[col] for col in by[::-1]]
+            order = np.lexsort(by)
+        else:
+            raise TypeError('`by` must be either a list `')
+
+        if not asc:
+            order = order[::-1]
+
+        return self[order.tolist(), :]
+
+    def sample(self, n=None, frac=None, replace=False, seed=None):
+        if seed:
+            np.random.seed(seed)
+
+        if frac is not None:
+            if frac <= 0:
+                raise ValueError('`frac` must be positive')
+            
+            n = int(frac * len(self))
+        if n is not None:
+            if not isinstance(n, int):
+                raise TypeError('`n` must be an int')
+
+            rows = np.random.choice(range(len(self)), n, replace=replace).tolist()
+            
+        return self[rows, :]
+
 def read_csv(fn):
     """ 
     Read in a comma-separated value file as a DataFrame
@@ -529,3 +641,4 @@ def read_csv(fn):
     -------
     A DataFrame
     """
+ 
