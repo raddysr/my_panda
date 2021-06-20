@@ -1,4 +1,3 @@
 *.ipynb
 *.txt
-radanda/__pycache__/
-*.py
+radanda/__pycache__/*
