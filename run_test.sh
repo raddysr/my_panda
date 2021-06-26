@@ -6,5 +6,12 @@
 #pytest tests/test_dataframe.py::TestGrouping::$1
 #pytest tests/test_dataframe.py::TestNonAgg::$1
 
-pytest tests/test_dataframe.py::TestMoreMethods::$1
+#pytest tests/test_dataframe.py::TestMoreMethods::$1
+#pytest tests/test_dataframe.py::TestGrouping::$1
+
+pytest tests/test_dataframe.py::TestStrings
+
+pytest tests/test_dataframe.py::TestReadCSV
+
+
 # Run this file with test_<function name> as a argument
