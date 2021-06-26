@@ -311,6 +311,7 @@ class DataFrame:
             except TypeError:
                 pass
         return DataFrame(new_data)
+
     def isna(self):
         """
         Determines whether each value in the DataFrame is missing or not
@@ -327,6 +328,7 @@ class DataFrame:
             else:
                 new_data[col] = np.isnan(values)
         return DataFrame(new_data)
+
     def is_nan(self):
         new_data = {}
         for col, value in self._data.items():
@@ -885,19 +887,21 @@ def read_csv(fn):
         column_names = header.strip('\n').split(',')
         for line in f:
             values = line.strip('\n').split(',')
-            for col,val in zip(column_names, values):
+            for col, val in zip(column_names, values):
                 data[col].append(val)
-    
+
     new_data = {}
-    
+
     for col, vals in data.items():
         try:
-            new_data[col] = np.array(vals, dtype = 'int')
+            new_data[col] = np.array(vals, dtype='int')
         except ValueError:
             try:
-                new_data[col] = np.array(vals, dtype = 'float')
+                new_data[col] = np.array(vals, dtype='float')
             except:
-                new_data[col] = np.array(vals, dtype= 'object')
+                new_data[col] = np.array(vals, dtype='object')
 
     return DataFrame(new_data)
+
+
 
