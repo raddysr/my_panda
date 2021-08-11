@@ -5,7 +5,6 @@ from numpy.lib import unique
 
 __version__ = '0.0.1'
 
-
 class DataFrame:
 
     def __init__(self, data):
