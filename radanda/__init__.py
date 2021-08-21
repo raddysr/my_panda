@@ -11,7 +11,6 @@ class DataFrame:
 
         self._check_input_types(data)
         self._check_array_legths(data)
-
         self._data = self._convert_unicode_to_object(data)
 
         self.str = StringMethods(self)
